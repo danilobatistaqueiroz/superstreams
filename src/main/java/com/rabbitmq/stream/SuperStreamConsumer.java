@@ -10,8 +10,11 @@ public class SuperStreamConsumer {
       System.exit(1);
     }
     String instanceName = args[0];
-    try (Environment environment = Environment.builder().maxConsumersByConnection(1)
-        .maxTrackingConsumersByConnection(1).build()) {
+    Address entryPoint = new Address("localhost", 5550);
+    try (Environment environment = Environment.builder().host(entryPoint.host()).port(entryPoint.port())
+            .username("rabbit_admin").password(".123-321.").addressResolver(address -> entryPoint).build()) {
+    //try (Environment environment = Environment.builder().host("localhost").port(5550).username("rabbit_admin").password(".123-321.")
+    //        .maxConsumersByConnection(1).maxTrackingConsumersByConnection(1).build()) {
 
       // to exit properly when Ctrl-C-ed
       Runtime.getRuntime().addShutdownHook(new Thread(() -> environment.close()));
@@ -21,11 +24,10 @@ public class SuperStreamConsumer {
 
       System.out.println("Starting consumer " + instanceName);
       environment.consumerBuilder().superStream(superStream).name(reference).singleActiveConsumer()
-          .autoTrackingStrategy().messageCountBeforeStorage(10).builder()
+          .autoTrackingStrategy().messageCountBeforeStorage(2500).builder()
           .messageHandler((context, message) -> {
             System.out.println(
-                "Consumer " + instanceName + " received message " + message.getProperties()
-                    .getMessageId() + " from stream " + context.stream() + ".");
+                "Consumer " + instanceName + " received message " + message.getBody() + message.getProperties().getMessageId() + " from stream " + context.stream() + ".");
           }).build();
       Scanner keyboard = new Scanner(System.in);
       keyboard.nextLine();

@@ -1,0 +1,28 @@
+cd /home/element/dados/tutorials/rabbit/superstreams
+
+docker rm -f $(docker ps -a --format "{{.ID}}")
+
+sudo rm -rf ./mnesia; \
+
+docker-compose up -d;
+
+docker-compose logs -f
+
+docker exec superserver rabbitmq-streams add_super_stream invoices --partitions 3
+
+
+
+invoices é a super stream
+já invoices-0, invoices-1, invoices-2 são as streams (partições)
+routing key para cada partição (streams ou queue) será 0, 1, 2
+também terá o argumento: x-stream-partition-order: 0,
+x-stream-partition-order: 1, x-stream-partition-order: 2
+o nome do consumer é instance-1, mas só para efeito de log
+o nome do consumer para tracking no lado do rabbitmq é my-app
+o nome do consumer group é my-app
+o primeiro consumer abre 3 conexões, uma em cada (stream)
+
+
+https://github.com/acogoluegnes/rabbitmq-stream-single-active-consumer#super-streams
+
+https://blog.rabbitmq.com/posts/2022/07/rabbitmq-3-11-feature-preview-single-active-consumer-for-streams
